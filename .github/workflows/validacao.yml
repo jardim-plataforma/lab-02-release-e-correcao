@@ -33,7 +33,7 @@ jobs:
           python-version: '3.11'
       - name: Verificar o serviço
         id: verificacao
-        continue-on-error: true
+        continue-on-error: false
         env:
           LAB_CENARIO: ${{ inputs.cenario || 'normal' }}
         run: python tools/validate.py
