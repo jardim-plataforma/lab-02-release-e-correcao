@@ -1,0 +1,47 @@
+name: Validação do catálogo
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      cenario:
+        description: Cenário de validação operacional
+        required: true
+        default: normal
+        type: choice
+        options:
+          - normal
+          - falha
+          - falha-python312
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Obter o projeto
+        uses: actions/checkout@v4
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verificar o serviço
+        id: verificacao
+        continue-on-error: true
+        env:
+          LAB_CENARIO: ${{ inputs.cenario || 'normal' }}
+        run: python tools/validate.py
+      - name: Registrar o resultado observado
+        if: ${{ always() }}
+        env:
+          RESULTADO_COMANDO: ${{ steps.verificacao.outcome }}
+          CONCLUSAO_ETAPA: ${{ steps.verificacao.conclusion }}
+        run: |
+          echo "Resultado da verificação: $RESULTADO_COMANDO" >> "$GITHUB_STEP_SUMMARY"
+          echo "Conclusão da etapa: $CONCLUSAO_ETAPA" >> "$GITHUB_STEP_SUMMARY"
