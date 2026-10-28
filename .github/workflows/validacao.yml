@@ -45,3 +45,27 @@ jobs:
         run: |
           echo "Resultado da verificação: $RESULTADO_COMANDO" >> "$GITHUB_STEP_SUMMARY"
           echo "Conclusão da etapa: $CONCLUSAO_ETAPA" >> "$GITHUB_STEP_SUMMARY"
+  empacotar:
+    needs: verificar
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Obter o projeto
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Gerar pacote identificado
+        env:
+          COMMIT_ORIGEM: ${{ github.sha }}
+        run: python tools/package.py --release --commit "$COMMIT_ORIGEM"
+
+      - name: Disponibilizar pacote
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalogo-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist/catalogo-*.zip
+          if-no-files-found: error
