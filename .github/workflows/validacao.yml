@@ -36,7 +36,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Verificar o serviço
         id: verificacao
-        continue-on-error: true
+        continue-on-error: false
         env:
           LAB_CENARIO: ${{ inputs.cenario || 'normal' }}
         run: python tools/validate.py
